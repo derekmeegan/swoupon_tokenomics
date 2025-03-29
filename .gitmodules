@@ -1,3 +1,3 @@
-[submodule "FixedLibrary"]
-	path = FixedLibrary
-	url = https://github.com/finkbeca/FixedLibrary.git
+[submodule "abdk-libraries-solidity"]
+	path = abdk-libraries-solidity
+	url = https://github.com/abdk-consulting/abdk-libraries-solidity.git
