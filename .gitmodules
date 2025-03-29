@@ -1,0 +1,3 @@
+[submodule "FixedLibrary"]
+	path = FixedLibrary
+	url = https://github.com/finkbeca/FixedLibrary.git
