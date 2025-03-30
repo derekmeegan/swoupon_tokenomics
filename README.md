@@ -49,8 +49,6 @@ This function calculates the potential Swoupon reward a user would receive when 
 
 $$potential\_TI(V) = \frac{(1 + V)^{0.3}}{0.1}$$
 
-*Note: The Solidity implementation uses $\sqrt{1+V}$ which approximates the original model's target of $(1 + V)^{0.3}$ due to limitations in the fixed-point library.*
-
 ### 4. Final Swoupon Reward TI(V)
 
 The actual Swoupon reward issued, capped at a fraction of the cost:
