@@ -1,45 +1,144 @@
-# Swoupon Tokenomics Calculation Module
+# Swoupon Tokenomics Calculation Library
 
-This repository contains the Solidity library and reference calculations for the Swoupon tokenomics framework. Swoupon is a liquidity pool rewards system designed to incentivize swappers and liquidity providers.
+This repository contains the Solidity implementation and reference calculations for the Swoupon tokenomics framework. Swoupon is a liquidity pool rewards system designed to incentivize swappers in decentralized exchanges.
 
 ## Overview
 
-The core idea is to issue reward tokens (`TI`) and charge cost tokens (`TR`) based on the volume (`V`) of a swap. This module provides the functions to calculate `TR` and `TI` for a given `V`. It also implements a dynamic fee mechanism (implicit in the `TR` calculation) that can benefit large volume swaps.
+Swoupon introduces an innovative approach to liquidity pool incentives by creating a balanced economic system where:
 
-The calculations are performed using 64.64 fixed-point arithmetic via the [ABDKMath64x64](https://github.com/abdk-consulting/abdk-libraries-solidity) library to maintain precision on-chain.
+- Swappers pay a dynamic fee (`TR`) based on their swap volume
+- Swappers receive reward tokens (`TI`, or "Swoupons") that can be used to pay for future swap fees
+- Swoupons are only issued for transactions that are not already paid with Swoupons
+- The system automatically adjusts to market conditions through volume-dependent calculations
 
-## Calculations
+The core principle is to create a sustainable economic model where users are incentivized to continue using the protocol by earning Swoupons on one swap that they can redeem on future swaps, creating a virtuous cycle of engagement.
 
-The primary calculations implemented in `contracts/CalcLib.sol` are:
+## Key Features
 
-1.  **Factor F(V):** A volume-dependent factor used in cost calculation.
-    `F(V) = 0.01 + (0.02 * exp(-0.00005 * V))`
+- **Dynamic Fee Structure**: Fees decrease as volume increases, incentivizing larger swaps
+- **Swoupon Rewards**: Users earn Swoupons on regular swaps that they can redeem for future swap fees
+- **Reward Cycle**: Only swaps paid with regular fees (not with Swoupons) generate new Swoupon rewards
+- **Fixed-Point Math**: All calculations use 64.64 fixed-point arithmetic for precise on-chain execution
+- **Gas Optimized**: Calculations are designed to be efficient for on-chain execution
 
-2.  **Swoupon Cost TR(V):** The cost charged for a swap of volume `V`.
-    `TR(V) = F(V) * V / 0.1`
+## Mathematical Model
 
-3.  **Potential Swoupon Reward potential_TI(V):** The potential reward before capping.
-    *Note: Due to limitations in the fixed-point library (no direct fractional powers), the Solidity implementation uses `sqrt(1+V)` which approximates the original model's target of `(1 + V)^0.3`.*
-    `potential_TI(V) = sqrt(1 + V) / 0.1`
+The Swoupon system is built on several key mathematical functions:
 
-4.  **Final Swoupon Reward TI(V):** The actual reward issued, capped at a fraction of the cost.
-    `TI(V) = min(potential_TI(V), TR(V) / 3)`
+### 1. Fee Factor Function F(V)
 
-## Implementation
+This function calculates a dynamic fee factor that decreases as volume increases:
 
--   **Solidity:** `contracts/CalcLib.sol` contains the library with the core calculation logic using `ABDKMath64x64`.
--   **Tests:** `test/CalcLib.test.js` provides Hardhat tests for the Solidity library.
--   **Python Reference:** `python/swoupon_calc.py` is intended for reference implementations or simulations of the formulas (currently empty).
+```
+F(V) = 0.01 + (0.02 * exp(-0.00005 * V))
+```
 
-## Visualization (Example)
+Where:
+- `V` is the swap volume
+- The fee factor ranges from 0.03 (at V=0) to 0.01 (as V approaches infinity)
 
-*(Add a brief description of what the image shows if applicable)*
+### 2. Swoupon Cost TR(V)
+
+This function calculates the cost charged for a swap of volume `V`:
+
+```
+TR(V) = F(V) * V / 0.1
+```
+
+This represents the amount of fees a user would pay for a swap, or alternatively, the amount of Swoupons they would need to spend if using Swoupons for the transaction.
+
+### 3. Potential Swoupon Reward TI(V)
+
+This function calculates the potential Swoupon reward a user would receive when making a swap paid with regular fees (not with Swoupons):
+
+```
+potential_TI(V) = (1 + V)^0.3 / 0.1
+```
+
+*Note: The Solidity implementation uses `sqrt(1+V)` which approximates the original model's target of `(1 + V)^0.3` due to limitations in the fixed-point library.*
+
+### 4. Final Swoupon Reward TI(V)
+
+The actual Swoupon reward issued, capped at a fraction of the cost:
+
+```
+TI(V) = min(potential_TI(V), TR(V) / 3)
+```
+
+This ensures that rewards never exceed one-third of the fees collected, maintaining economic sustainability. These Swoupons can then be used to pay for future swap fees.
+
+## Implementation Details
+
+### Solidity Implementation
+
+The core calculations are implemented in `contracts/CalcLib.sol` using the [ABDKMath64x64](https://github.com/abdk-consulting/abdk-libraries-solidity) library for fixed-point arithmetic. The implementation includes:
+
+- Fixed-point constants for all mathematical parameters
+- Helper functions for min/max operations
+- Core calculation functions for F(V), TR(V), and TI(V)
+- Combined calculation function for efficiency
+
+### Fixed-Point Constants
+
+```solidity
+// 0.01 * 2^64 = 184467440737095516
+int128 private constant C_0_01 = 184467440737095520;
+// 0.02 * 2^64 = 368934881474191032
+int128 private constant C_0_02 = 368934881474191040;
+// -0.00005 * 2^64 = -922337203685477
+int128 private constant C_NEG_0_00005 = -922337203685477;
+// 0.1 * 2^64 = 1844674407370955161 (approx)
+int128 private constant C_0_1 = 1844674407370955264;
+// 1/3 * 2^64 = 6148914691236517205 (approx)
+int128 private constant MAX_TI_FRACTION = 6148914691236516864; // 1/3
+// 1 * 2^64 = 18446744073709551616
+int128 private constant C_ONE = 18446744073709551616;
+```
+
+## Python Reference Implementation
+
+A Python reference implementation is provided in `python/swoupon_calc.py` for simulation and testing purposes. This implementation:
+
+- Uses NumPy for mathematical operations
+- Provides the same core functions as the Solidity implementation
+- Includes test cases and verification logic
+- Uses the exact `(1 + V)^0.3` formula for potential TI calculation
+
+## Testing
+
+The Solidity implementation is thoroughly tested using Hardhat:
+
+- Unit tests for all calculation functions
+- Comparison against pre-calculated values from the Python implementation
+- Edge case testing for V=0 and other boundary conditions
+- Precision testing with appropriate tolerances
+
+## Visualization
+
+The following chart illustrates how TR and TI scale with volume:
 
 ![Calculation Visualization](./assets/charts.png)
 
 ## Development
 
-This project uses Hardhat.
+This project uses Hardhat for Solidity development:
 
--   Compile: `npx hardhat compile`
--   Test: `npx hardhat test`
+- **Setup**: `npm install`
+- **Compile**: `npx hardhat compile`
+- **Test**: `npx hardhat test`
+
+## Integration
+
+To integrate this library into your project:
+
+1. Import the `CalcLib.sol` contract
+2. Use the calculation functions to determine fees and rewards based on swap volume
+3. Ensure your contract has access to the ABDKMath64x64 library
+
+## License
+
+[Add your license information here]
+
+## Contributors
+
+[Add contributor information here]
