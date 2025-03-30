@@ -35,7 +35,7 @@ The primary calculations implemented in `contracts/CalcLib.sol` are:
 
 *(Add a brief description of what the image shows if applicable)*
 
-![Calculation Visualization](./assets/Untitled.png)
+![Calculation Visualization](./assets/charts.png)
 
 ## Development
 
