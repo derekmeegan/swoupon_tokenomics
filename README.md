@@ -29,21 +29,17 @@ The Swoupon system is built on several key mathematical functions:
 
 This function calculates a dynamic fee factor that decreases as volume increases:
 
-```
-F(V) = 0.01 + (0.02 * exp(-0.00005 * V))
-```
+$$F(V) = 0.01 + (0.02 \cdot e^{-0.00005 \cdot V})$$
 
 Where:
-- `V` is the swap volume
-- The fee factor ranges from 0.03 (at V=0) to 0.01 (as V approaches infinity)
+- $V$ is the swap volume
+- The fee factor ranges from 0.03 (at $V=0$) to 0.01 (as $V$ approaches infinity)
 
 ### 2. Swoupon Cost TR(V)
 
-This function calculates the cost charged for a swap of volume `V`:
+This function calculates the cost charged for a swap of volume $V$:
 
-```
-TR(V) = F(V) * V / 0.1
-```
+$$TR(V) = \frac{F(V) \cdot V}{0.1}$$
 
 This represents the amount of fees a user would pay for a swap, or alternatively, the amount of Swoupons they would need to spend if using Swoupons for the transaction.
 
@@ -51,19 +47,15 @@ This represents the amount of fees a user would pay for a swap, or alternatively
 
 This function calculates the potential Swoupon reward a user would receive when making a swap paid with regular fees (not with Swoupons):
 
-```
-potential_TI(V) = (1 + V)^0.3 / 0.1
-```
+$$potential\_TI(V) = \frac{(1 + V)^{0.3}}{0.1}$$
 
-*Note: The Solidity implementation uses `sqrt(1+V)` which approximates the original model's target of `(1 + V)^0.3` due to limitations in the fixed-point library.*
+*Note: The Solidity implementation uses $\sqrt{1+V}$ which approximates the original model's target of $(1 + V)^{0.3}$ due to limitations in the fixed-point library.*
 
 ### 4. Final Swoupon Reward TI(V)
 
 The actual Swoupon reward issued, capped at a fraction of the cost:
 
-```
-TI(V) = min(potential_TI(V), TR(V) / 3)
-```
+$$TI(V) = \min(potential\_TI(V), \frac{TR(V)}{3})$$
 
 This ensures that rewards never exceed one-third of the fees collected, maintaining economic sustainability. These Swoupons can then be used to pay for future swap fees.
 
@@ -102,7 +94,7 @@ A Python reference implementation is provided in `python/swoupon_calc.py` for si
 - Uses NumPy for mathematical operations
 - Provides the same core functions as the Solidity implementation
 - Includes test cases and verification logic
-- Uses the exact `(1 + V)^0.3` formula for potential TI calculation
+- Uses the exact $(1 + V)^{0.3}$ formula for potential TI calculation
 
 ## Testing
 
@@ -137,8 +129,24 @@ To integrate this library into your project:
 
 ## License
 
-[Add your license information here]
+MIT License
 
-## Contributors
+Copyright (c) 2025 Swoupon
 
-[Add contributor information here]
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
