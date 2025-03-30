@@ -3,7 +3,7 @@ pragma solidity ^0.8.19; // Use a recent Solidity version
 
 // Assume ABDKMath64x64.sol is in the specified path relative to this file
 // Example path: import "./abdk-libraries-solidity/ABDKMath64x64.sol";
-import "@abdk/ABDKMath64x64.sol"; // Example using npm package import path
+import "../abdk-libraries-solidity/ABDKMath64x64.sol"; // Example using npm package import path
 
 /**
  * @title CalcLib
@@ -20,15 +20,15 @@ library CalcLib {
     // Pre-calculate fixed-point representations (value * 2^64)
 
     // 0.01 * 2^64 = 184467440737095516
-    int128 private constant C_0_01 = 184467440737095516;
+    int128 private constant C_0_01 = 184467440737095520;
     // 0.02 * 2^64 = 368934881474191032
-    int128 private constant C_0_02 = 368934881474191032;
+    int128 private constant C_0_02 = 368934881474191040;
     // -0.00005 * 2^64 = -922337203685477
     int128 private constant C_NEG_0_00005 = -922337203685477;
      // 0.1 * 2^64 = 1844674407370955161 (approx)
-    int128 private constant C_0_1 = 1844674407370955161;
+    int128 private constant C_0_1 = 1844674407370955264;
     // 1/3 * 2^64 = 6148914691236517205 (approx)
-    int128 private constant MAX_TI_FRACTION = 6148914691236517205; // 1/3
+    int128 private constant MAX_TI_FRACTION = 6148914691236516864; // 1/3
     // 1 * 2^64 = 18446744073709551616
     int128 private constant C_ONE = 18446744073709551616;
 
